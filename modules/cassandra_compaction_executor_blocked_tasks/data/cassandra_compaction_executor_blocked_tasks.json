@@ -1,0 +1,142 @@
+{
+  "name": "cassandra_compaction_executor_blocked_tasks",
+  "description": "This incident type refers to a situation where some tasks in the Cassandra compaction executor are blocked, impacting the performance of the system. It may occur due to various reasons, such as high resource utilization, hardware failures, or software bugs. This issue needs to be addressed promptly to ensure the smooth functioning of the system.",
+  "params": [
+    {
+      "name": "KEYSPACE_NAME",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_CASSANDRA_CONFIG",
+      "value": ""
+    },
+    {
+      "name": "TABLE_NAME",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_CASSANDRA_LOG",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Cassandra compaction executor blocked tasks.\nThis incident type refers to a situation where some tasks in the Cassandra compaction executor are blocked, impacting the performance of the system. It may occur due to various reasons, such as high resource utilization, hardware failures, or software bugs. This issue needs to be addressed promptly to ensure the smooth functioning of the system."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check CPU and memory utilization"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `top`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check disk usage"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `df -h`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Cassandra service is running"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `systemctl status cassandra`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check Cassandra logs for errors"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `tail -f /var/log/cassandra/system.log`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if compaction is running"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `nodetool compactionstats`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check for blocked tasks in compaction"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `nodetool tpstats | grep CompactionExecutor | awk '{print $1,$5}'`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Configuration issues: Incorrect configuration of the Cassandra cluster or executor can cause tasks to block."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_cassandra_configuration_check($PATH_TO_CASSANDRA_CONFIG, $PATH_TO_CASSANDRA_LOG)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Compact all tables in cassandra database using nodetool utility to force the completion of the blocked compaction task."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "rq_non_kubectl_oneliner | `nodetool compact ${KEYSPACE_NAME} ${TABLE_NAME}`"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Restarting the Cassandra compaction executor can help resolve the issue, as it can clear any stuck tasks and ensure the smooth functioning of the system."
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_stop_start_cassandra_compaction()"
+    }
+  ]
+}
